@@ -54,6 +54,29 @@ function verifyToken(req, res, next) {
     });
 }
 
+// Restrict catalog mutations to users explicitly marked as administrators.
+async function verifyAdmin(req, res, next) {
+    try {
+        const result = await client.query(
+            'SELECT is_admin FROM users WHERE id = $1',
+            [req.user.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'User account not found.' });
+        }
+
+        if (result.rows[0].is_admin !== true) {
+            return res.status(403).json({ message: 'Admin access required.' });
+        }
+
+        return next();
+    } catch (error) {
+        console.error('Admin authorization error:', error);
+        return res.status(500).json({ message: 'Internal server error.' });
+    }
+}
+
 // === API Routes ===
 
 // Root route (for testing)
@@ -141,7 +164,7 @@ app.get('/api/profile', verifyToken, (req, res) => {
 });
 
 // Add a new product (Protected route - for admins)
-app.post('/api/products', verifyToken, async (req, res) => {
+app.post('/api/products', verifyToken, verifyAdmin, async (req, res) => {
     const { name, description, price, stock, image_url } = req.body;
 
     if (!name || !price || !stock) {
@@ -169,7 +192,7 @@ app.post('/api/products', verifyToken, async (req, res) => {
 });
 
 // Update a product by ID (Protected route - for admins)
-app.put('/api/products/:id', verifyToken, async (req, res) => {
+app.put('/api/products/:id', verifyToken, verifyAdmin, async (req, res) => {
     const { id } = req.params;
     const { name, description, price, stock, image_url } = req.body;
 
@@ -204,7 +227,7 @@ app.put('/api/products/:id', verifyToken, async (req, res) => {
 });
 
 // Delete a product by ID (Protected route - for admins)
-app.delete('/api/products/:id', verifyToken, async (req, res) => {
+app.delete('/api/products/:id', verifyToken, verifyAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
