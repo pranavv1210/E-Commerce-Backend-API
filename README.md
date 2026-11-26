@@ -137,8 +137,16 @@ This is the most critical step. You'll set up your PostgreSQL database using the
     DB_NAME=ecommerce_api_db
     DB_PORT=5432
 
-    JWT_SECRET=a_very_secure_and_long_secret_key
+    JWT_SECRET=replace_with_generated_64_character_hex_value
     ```
+
+Generate a strong JWT secret with Node.js and paste the output into `JWT_SECRET`:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+The server now refuses to start if the secret is missing or shorter than 32 characters.
 
 ### Step 4: Run the Server
 
