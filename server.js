@@ -6,6 +6,13 @@ const { Client } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Fail fast when JWT signing would use a missing or weak secret.
+const JWT_SECRET = JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    console.error('JWT_SECRET must be configured with at least 32 characters.');
+    process.exit(1);
+}
+
 const app = express();
 // Middleware to parse JSON bodies from incoming requests
 app.use(express.json());
@@ -45,7 +52,7 @@ function verifyToken(req, res, next) {
         return res.status(401).json({ message: 'Authorization token is missing.' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: 'Invalid token.' });
         }
@@ -129,7 +136,7 @@ app.post('/api/login', async (req, res) => {
         if (!passwordMatch) {
             return res.status(401).json({ message: 'Invalid credentials.' });
         }
-        const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({
             message: 'Login successful!',
             token: token
