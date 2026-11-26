@@ -40,8 +40,8 @@ Follow these instructions in order to get the project up and running on your loc
 Clone the project from your GitHub repository to your local machine using the command line.
 
 ```bash
-git clone https://github.com/pranavv1210/E-Commerce-API.git
-cd E-Commerce-API
+git clone https://github.com/pranavv1210/E-Commerce-Backend-API.git
+cd E-Commerce-Backend-API
 ```
 
 ### Step 2: Install Dependencies
